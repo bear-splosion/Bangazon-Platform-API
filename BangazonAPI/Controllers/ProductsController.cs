@@ -30,6 +30,8 @@ namespace BangazonAPI.Controllers
             }
         }
 
+        //GET ALL PRODUCTS BELOW
+
         // GET api/products
         [HttpGet]
         public async Task<IActionResult> Get()
@@ -44,161 +46,34 @@ namespace BangazonAPI.Controllers
                     WHERE 1 = 1";
                     SqlDataReader reader = await cmd.ExecuteReaderAsync();
 
-                    //made it to here
+    
 
-                    List<PaymentType> paymentTypes = new List<PaymentType>();
+                    List<Product> Products = new List<Product>();
                     while (reader.Read())
                     {
-                        PaymentType paymentType = new PaymentType
+                        Product product = new Product
                         {
                             Id = reader.GetInt32(reader.GetOrdinal("Id")),
-                            Name = reader.GetString(reader.GetOrdinal("Name")),
-                            AcctNumber = reader.GetInt32(reader.GetOrdinal("AcctNumber")),
-                            CustomerId = reader.GetInt32(reader.GetOrdinal("CustomerId"))
+                            ProductTypeId = reader.GetInt32(reader.GetOrdinal("ProductTypeId")),
+                            CustomerId = reader.GetInt32(reader.GetOrdinal("CustomerId")),
+                            Price = reader.GetInt32(reader.GetOrdinal("Price")),
+                            Title = reader.GetString(reader.GetOrdinal("Title")),
+                            Description = reader.GetString(reader.GetOrdinal("Description")),
+                            Quantity = reader.GetInt32(reader.GetOrdinal("Quantity"))
                         };
 
-                        paymentTypes.Add(paymentType);
+                        Products.Add(product);
                     }
 
                     reader.Close();
 
-                    return Ok(paymentTypes);
+                    return Ok(Products);
                 }
             }
         }
 
-        // GET api/paymentTypes/5
-        [HttpGet("{id}")]
-        public async Task<IActionResult> Get(int id)
-        {
-            using (SqlConnection conn = Connection)
-            {
-                conn.Open();
-                using (SqlCommand cmd = conn.CreateCommand())
-                {
-                    cmd.CommandText = @"
-                        SELECT
-                            Id, [Name], AcctNumber, CustomerId 
-                        FROM PaymentType
-                        WHERE Id = @id";
-                    cmd.Parameters.Add(new SqlParameter("@id", id));
-                    SqlDataReader reader = await cmd.ExecuteReaderAsync();
+   //GET ONE PRODUCT BELOW
 
-                    PaymentType paymentType = null;
-                    if (reader.Read())
-                    {
-                        paymentType = new PaymentType
-                        {
-                            Id = reader.GetInt32(reader.GetOrdinal("Id")),
-                            Name = reader.GetString(reader.GetOrdinal("Name")),
-                            AcctNumber = reader.GetInt32(reader.GetOrdinal("AcctNumber")),
-                            CustomerId = reader.GetInt32(reader.GetOrdinal("CustomerId"))
-                        };
-                    }
 
-                    reader.Close();
-
-                    return Ok(paymentType);
-                }
-            }
-        }
-
-        // POST api/paymentTypes
-        [HttpPost]
-        public async Task<IActionResult> Post([FromBody] PaymentType paymentType)
-        {
-            using (SqlConnection conn = Connection)
-            {
-                conn.Open();
-                using (SqlCommand cmd = conn.CreateCommand())
-                {
-                    // More string interpolation
-                    cmd.CommandText = @"
-                        INSERT INTO PaymentType ([Name], AcctNumber, CustomerId)
-                        OUTPUT INSERTED.Id
-                        VALUES (@name, @acctNumber, @customerId)
-                    ";
-                    cmd.Parameters.Add(new SqlParameter("@name", paymentType.Name));
-                    cmd.Parameters.Add(new SqlParameter("@acctNumber", paymentType.AcctNumber));
-                    cmd.Parameters.Add(new SqlParameter("@customerId", paymentType.CustomerId));
-
-                    paymentType.Id = (int)await cmd.ExecuteScalarAsync();
-
-                    return CreatedAtRoute("GetPaymentType", new { id = paymentType.Id }, paymentType);
-                }
-            }
-        }
-
-        // PUT api/values/5
-        [HttpPut("{id}")]
-        public async Task<IActionResult> Put(int id, [FromBody] PaymentType paymentType)
-        {
-            try
-            {
-                using (SqlConnection conn = Connection)
-                {
-                    conn.Open();
-                    using (SqlCommand cmd = conn.CreateCommand())
-                    {
-                        cmd.CommandText = @"
-                            UPDATE PaymentType
-                            SET Name = @name
-                            SET AcctNumber = @acctNumber
-                            SET CustomerId = @customerId
-                            -- Set the remaining columns here
-                            WHERE Id = @id
-                        ";
-                        cmd.Parameters.Add(new SqlParameter("@id", paymentType.Id));
-                        cmd.Parameters.Add(new SqlParameter("@name", paymentType.Name));
-                        cmd.Parameters.Add(new SqlParameter("@acctNumber", paymentType.AcctNumber));
-                        cmd.Parameters.Add(new SqlParameter("@customerId", paymentType.CustomerId));
-
-                        int rowsAffected = await cmd.ExecuteNonQueryAsync();
-
-                        if (rowsAffected > 0)
-                        {
-                            return new StatusCodeResult(StatusCodes.Status204NoContent);
-                        }
-
-                        throw new Exception("No rows affected");
-                    }
-                }
-            }
-            catch (Exception)
-            {
-                if (!PaymentTypeExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-        }
-
-        // DELETE api/values/5
-        //[HttpDelete("{id}")]
-        //public async Task<IActionResult> Delete(int id)
-        //{
-        //}
-
-        private bool PaymentTypeExists(int id)
-        {
-            using (SqlConnection conn = Connection)
-            {
-                conn.Open();
-                using (SqlCommand cmd = conn.CreateCommand())
-                {
-                    // More string interpolation
-                    cmd.CommandText = "SELECT Id FROM PaymentType WHERE Id = @id";
-                    cmd.Parameters.Add(new SqlParameter("@id", id));
-
-                    SqlDataReader reader = cmd.ExecuteReader();
-
-                    return reader.Read();
-                }
-            }
-        }
     }
 }
