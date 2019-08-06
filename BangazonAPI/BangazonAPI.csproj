@@ -5,7 +5,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="SQL Scripts\" />
     <Folder Include="wwwroot\" />
   </ItemGroup>
 
