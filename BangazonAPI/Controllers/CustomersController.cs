@@ -122,7 +122,7 @@ namespace BangazonAPI.Controllers
 
                             customer.Products.Add(product);
                         }
-                        
+
                         if (include == "payments")
                         {
                             PaymentType paymentType = new PaymentType
@@ -131,7 +131,7 @@ namespace BangazonAPI.Controllers
                                 AcctNumber = reader.GetInt32(reader.GetOrdinal("AcctNumber")),
                                 Name = reader.GetString(reader.GetOrdinal("Name"))
                             };
-                             
+
                             customer.PaymentTypes.Add(paymentType);
                         }
 
