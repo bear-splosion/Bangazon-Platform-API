@@ -80,7 +80,7 @@ namespace BangazonAPI.Controllers
                                 Id = reader.GetInt32(reader.GetOrdinal("ProductId")),
                                 Title = reader.GetString(reader.GetOrdinal("Title")),
                                 Description = reader.GetString(reader.GetOrdinal("Description")),
-                                Price = reader.GetDouble(reader.GetOrdinal("Price")),
+                                Price = reader.GetDecimal(reader.GetOrdinal("Price")),
                                 Quantity = reader.GetInt32(reader.GetOrdinal("Quantity"))
                             };
                             return Ok(customers);
