@@ -124,7 +124,38 @@ namespace TestBangazonAPI
                 Assert.Equal(CreditCard1.AcctNumber, NewCreditCard.AcctNumber);
                 Assert.Equal(CreditCard1.CustomerId, NewCreditCard.CustomerId);
 
-                // *****start here*****
+                /*
+                    ACT 
+                */
+                var deleteResponse = await client.DeleteAsync($"/api/animals/{NewCreditCard.Id}");
+
+                /*
+                    ASSERT
+                */
+                Assert.Equal(HttpStatusCode.NoContent, deleteResponse.StatusCode);
+            }
+        }
+
+        [Fact]
+        public async Task Test_Delete_NonExistent_PaymentType_Fails()
+        {
+            using (var client = new APIClientProvider().Client)
+            {
+                /*
+                    ARRANGE
+                */
+
+                /*
+                    ACT
+                */
+                var deleteResponse = await client.DeleteAsync("/api/paymentTypes/99999999");
+
+                /*
+                    ASSERT
+                */
+                Assert.False(deleteResponse.IsSuccessStatusCode);
+                Assert.Equal(HttpStatusCode.NotFound, deleteResponse.StatusCode);
+
             }
         }
     }
