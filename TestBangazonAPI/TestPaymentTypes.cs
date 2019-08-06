@@ -82,7 +82,7 @@ namespace TestBangazonAPI
                 /*
                     ACT
                 */
-                var response = await client.GetAsync("/api/paymenttypes/99999999");
+                var response = await client.GetAsync("/api/paymentTypes/99999999");
 
                 /*
                     ASSERT
@@ -129,7 +129,7 @@ namespace TestBangazonAPI
                 /*
                     ACT 
                 */
-                var deleteResponse = await client.DeleteAsync($"/api/animals/{NewCreditCard.Id}");
+                var deleteResponse = await client.DeleteAsync($"/api/paymentTypes/{NewCreditCard.Id}");
 
                 /*
                     ASSERT
