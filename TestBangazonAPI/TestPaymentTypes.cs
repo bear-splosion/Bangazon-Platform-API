@@ -158,5 +158,46 @@ namespace TestBangazonAPI
 
             }
         }
+
+        [Fact]
+        public async Task Test_Modify_PaymentType()
+        {
+            // New paymentType value to change to and test
+            string NewPaymentName = "mastercard vip";
+
+            using (var client = new APIClientProvider().Client)
+            {
+                /*
+                    PUT
+                */
+
+                PaymentType ModifiedMastercard = new PaymentType
+                {
+                    Name = NewPaymentName,
+                    AcctNumber = 622854,
+                    CustomerId = 3
+                };
+                var ModifiedMastercardAsJSON = JsonConvert.SerializeObject(ModifiedMastercard);
+
+                var response = await client.PutAsync(
+                    "/api/paymentTypes/4",
+                    new StringContent(ModifiedMastercardAsJSON, Encoding.UTF8, "application/json"));
+                string responseBody = await response.Content.ReadAsStringAsync();
+
+                Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+
+                /*
+                 GET section
+                */
+                var GetMastercard = await client.GetAsync("/api/paymentTypes/4");
+                GetMastercard.EnsureSuccessStatusCode();
+
+                string GetMastercardBody = await GetMastercard.Content.ReadAsStringAsync();
+                PaymentType NewMastercard = JsonConvert.DeserializeObject<PaymentType>GetMastercardBody);
+
+                Assert.Equal(HttpStatusCode.OK, GetMastercard.StatusCode);
+                Assert.Equal(NewPaymentName, NewMastercard.NewPaymentName);
+            }
+        }
     }
 }
