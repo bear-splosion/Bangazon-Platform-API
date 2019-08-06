@@ -30,8 +30,6 @@ namespace BangazonAPI.Controllers
             }
         }
 
-        //GET ALL PRODUCTS BELOW
-
         // GET api/products
         [HttpGet]
         public async Task<IActionResult> Get()
@@ -46,7 +44,7 @@ namespace BangazonAPI.Controllers
                     WHERE 1 = 1";
                     SqlDataReader reader = await cmd.ExecuteReaderAsync();
 
-    
+
 
                     List<Product> Products = new List<Product>();
                     while (reader.Read())
@@ -72,8 +70,7 @@ namespace BangazonAPI.Controllers
             }
         }
 
-   //GET ONE PRODUCT BELOW
-
-
+        //GET ONE PRODUCT BELOW
     }
 }
+
