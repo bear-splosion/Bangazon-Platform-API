@@ -66,5 +66,66 @@ namespace TestBangazonAPI
                 Assert.NotNull(paymentType);
             }
         }
+
+        [Fact]
+        public async Task Test_Get_Nonexistent_PaymentType()
+        {
+            using (var client = new APIClientProvider().Client)
+            {
+                /*
+                    ARRANGE
+                */
+
+
+                /*
+                    ACT
+                */
+                var response = await client.GetAsync("/api/paymenttypes/99999999");
+
+                /*
+                    ASSERT
+                */
+                Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+            }
+        }
+
+        [Fact]
+        public async Task Test_Create_And_Delete_PaymentType()
+        {
+            using (var client = new APIClientProvider().Client)
+            {
+                /*
+                    ARRANGE
+                */
+                PaymentType CreditCard1 = new PaymentType
+                {
+                    Name = "Visa",
+                    AcctNumber = 385858,
+                    CustomerId = 4
+                };
+
+                var CreditCard1AsJSON = JsonConvert.SerializeObject(CreditCard1);
+
+                /*
+                    ACT
+                */
+                var response = await client.GetAsync("/api/paymenttypes");
+                new StringContent(CreditCard1AsJSON, Encoding.UTF8, "application/json")
+                    );
+
+                string responseBody = await response.Content.ReadAsStringAsync();
+                var NewCreditCard = JsonConvert.DeserializeObject<PaymentType>(responseBody);
+
+                /*
+                    ASSERT
+                */
+                Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+                Assert.Equal(CreditCard1.Name, NewCreditCard.Name);
+                Assert.Equal(CreditCard1.AcctNumber, NewCreditCard.AcctNumber);
+                Assert.Equal(CreditCard1.CustomerId, NewCreditCard.CustomerId);
+
+                // *****start here*****
+            }
+        }
     }
 }
