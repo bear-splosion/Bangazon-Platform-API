@@ -36,5 +36,35 @@ namespace TestBangazonAPI
                 Assert.True(paymentTypes.Count > 0);
             }
         }
+
+        [Fact]
+        public async Task Test_Get_Single_PaymentType()
+        {
+            using (var client = new APIClientProvider().Client)
+            {
+                /*
+                    ARRANGE
+                */
+
+
+                /*
+                    ACT
+                */
+                var response = await client.GetAsync("/api/paymenttypes/4");
+
+
+                string responseBody = await response.Content.ReadAsStringAsync();
+                var paymentType = JsonConvert.DeserializeObject<PaymentType>(responseBody);
+
+                /*
+                    ASSERT
+                */
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                Assert.Equal("mastercard", paymentType.Name);
+                Assert.Equal(622854, paymentType.AcctNumber);
+                Assert.Equal(3, paymentType.CustomerId);
+                Assert.NotNull(paymentType);
+            }
+        }
     }
 }
