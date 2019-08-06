@@ -101,9 +101,9 @@ namespace BangazonAPI.Controllers
             }
         }
 
-        // POST api/values
+        // POST api/paymentTypes
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody] Customer customer)
+        public async Task<IActionResult> Post([FromBody] PaymentType paymentType)
         {
             using (SqlConnection conn = Connection)
             {
@@ -112,22 +112,24 @@ namespace BangazonAPI.Controllers
                 {
                     // More string interpolation
                     cmd.CommandText = @"
-                        INSERT INTO Customer ()
+                        INSERT INTO PaymentType ([Name], AcctNumber, CustomerId)
                         OUTPUT INSERTED.Id
-                        VALUES ()
+                        VALUES (@name, @acctNumber, @customerId)
                     ";
-                    cmd.Parameters.Add(new SqlParameter("@firstName", customer.FirstName));
+                    cmd.Parameters.Add(new SqlParameter("@name", paymentType.Name));
+                    cmd.Parameters.Add(new SqlParameter("@acctNumber", paymentType.AcctNumber));
+                    cmd.Parameters.Add(new SqlParameter("@customerId", paymentType.CustomerId));
 
-                    customer.Id = (int)await cmd.ExecuteScalarAsync();
+                    paymentType.Id = (int)await cmd.ExecuteScalarAsync();
 
-                    return CreatedAtRoute("GetCustomer", new { id = customer.Id }, customer);
+                    return CreatedAtRoute("GetPaymentType", new { id = paymentType.Id }, paymentType);
                 }
             }
         }
 
         // PUT api/values/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> Put(int id, [FromBody] Customer customer)
+        public async Task<IActionResult> Put(int id, [FromBody] PaymentType paymentType)
         {
             try
             {
@@ -137,13 +139,17 @@ namespace BangazonAPI.Controllers
                     using (SqlCommand cmd = conn.CreateCommand())
                     {
                         cmd.CommandText = @"
-                            UPDATE Customer
-                            SET FirstName = @firstName
+                            UPDATE PaymentType
+                            SET Name = @name
+                            SET AcctNumber = @acctNumber
+                            SET CustomerId = @customerId
                             -- Set the remaining columns here
                             WHERE Id = @id
                         ";
-                        cmd.Parameters.Add(new SqlParameter("@id", customer.Id));
-                        cmd.Parameters.Add(new SqlParameter("@firstName", customer.FirstName));
+                        cmd.Parameters.Add(new SqlParameter("@id", paymentType.Id));
+                        cmd.Parameters.Add(new SqlParameter("@name", paymentType.Name));
+                        cmd.Parameters.Add(new SqlParameter("@acctNumber", paymentType.AcctNumber));
+                        cmd.Parameters.Add(new SqlParameter("@customerId", paymentType.CustomerId));
 
                         int rowsAffected = await cmd.ExecuteNonQueryAsync();
 
@@ -158,7 +164,7 @@ namespace BangazonAPI.Controllers
             }
             catch (Exception)
             {
-                if (!CustomerExists(id))
+                if (!PaymentTypeExists(id))
                 {
                     return NotFound();
                 }
@@ -175,7 +181,7 @@ namespace BangazonAPI.Controllers
         //{
         //}
 
-        private bool CustomerExists(int id)
+        private bool PaymentTypeExists(int id)
         {
             using (SqlConnection conn = Connection)
             {
@@ -183,7 +189,7 @@ namespace BangazonAPI.Controllers
                 using (SqlCommand cmd = conn.CreateCommand())
                 {
                     // More string interpolation
-                    cmd.CommandText = "SELECT Id FROM Customer WHERE Id = @id";
+                    cmd.CommandText = "SELECT Id FROM PaymentType WHERE Id = @id";
                     cmd.Parameters.Add(new SqlParameter("@id", id));
 
                     SqlDataReader reader = cmd.ExecuteReader();
