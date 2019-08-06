@@ -5,6 +5,8 @@ using Xunit;
 using BangazonAPI.Models;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using System.Net.Http;
+using System.Text;
 
 namespace TestBangazonAPI
 {
@@ -109,12 +111,12 @@ namespace TestBangazonAPI
                 /*
                     ACT
                 */
-                var response = await client.GetAsync("/api/paymenttypes");
+                var response = await client.PostAsync("/api/paymentTypes",
                 new StringContent(CreditCard1AsJSON, Encoding.UTF8, "application/json")
                     );
 
                 string responseBody = await response.Content.ReadAsStringAsync();
-                var NewCreditCard = JsonConvert.DeserializeObject<PaymentType>(responseBody);
+                PaymentType NewCreditCard = JsonConvert.DeserializeObject<PaymentType>(responseBody);
 
                 /*
                     ASSERT
@@ -193,10 +195,10 @@ namespace TestBangazonAPI
                 GetMastercard.EnsureSuccessStatusCode();
 
                 string GetMastercardBody = await GetMastercard.Content.ReadAsStringAsync();
-                PaymentType NewMastercard = JsonConvert.DeserializeObject<PaymentType>GetMastercardBody);
+                PaymentType NewMastercard = JsonConvert.DeserializeObject<PaymentType>(GetMastercardBody);
 
                 Assert.Equal(HttpStatusCode.OK, GetMastercard.StatusCode);
-                Assert.Equal(NewPaymentName, NewMastercard.NewPaymentName);
+                Assert.Equal(NewPaymentName, NewMastercard.Name);
             }
         }
     }
