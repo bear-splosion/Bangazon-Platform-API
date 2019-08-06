@@ -32,26 +32,108 @@ namespace BangazonAPI.Controllers
 
         // GET api/values
         [HttpGet]
-        public async Task<IActionResult> Get()
+        public async Task<IActionResult> Get(string _include = null)
+        {
+            return await GetCustomers(include: _include);
+        }
+
+        // GET api/values/5
+        [HttpGet("{id}")]
+        public async Task<IActionResult> Get(int id, string _include = null)
+        {
+            return await GetCustomers(id, _include);
+        }
+
+        private async Task<IActionResult> GetCustomers(int? id = null, string include = null)
         {
             using (SqlConnection conn = Connection)
             {
                 conn.Open();
                 using (SqlCommand cmd = conn.CreateCommand())
                 {
-                    cmd.CommandText = "Write your SQL statement here to get all customers";
+                    if (include == "products")
+                    {
+                        cmd.CommandText = @"SELECT c.Id,
+                                                   c.FirstName,
+                                                   c.LastName,
+                                                   p.Id AS ProductId,
+                                                   p.Price,
+                                                   p.Title,
+                                                   p.[Description],
+                                                   p.Quantity
+                                            FROM Customer c
+                                            LEFT OUTER JOIN Product p
+                                                ON p.CustomerId = c.Id";
+                    }
+                    else if (include == "payments")
+                    {
+                        cmd.CommandText = @"SELECT c.Id,
+                                                   c.FirstName,
+                                                   c.LastName,
+                                                   p.Id AS PaymentTypeId,
+                                                   p.AcctNumber,
+                                                   p.Name
+                                            FROM Customer c
+                                            LEFT OUTER JOIN PaymentType p
+                                                ON p.CustomerId = c.Id";
+                    }
+                    else
+                    {
+
+                        cmd.CommandText = @"SELECT c.Id,
+                                                   c.FirstName,
+                                                   c.LastName
+                                            FROM Customer c";
+                    }
+                    if (id.HasValue)
+                    {
+                        cmd.CommandText += @" WHERE c.Id = @id";
+                        cmd.Parameters.AddWithValue("@id", id.Value);
+                    }
                     SqlDataReader reader = await cmd.ExecuteReaderAsync();
 
                     List<Customer> customers = new List<Customer>();
                     while (reader.Read())
                     {
-                        Customer customer = new Customer
+                        Customer customer = null;
+                        var customerId = reader.GetInt32(reader.GetOrdinal("Id"));
+                        customer = customers.FirstOrDefault(x => x.Id == customerId);
+                        if (customer == null)
                         {
-                            Id = reader.GetInt32(reader.GetOrdinal("Id")),
-                            FirstName = reader.GetString(reader.GetOrdinal("FirstName")),
-                            LastName = reader.GetString(reader.GetOrdinal("LastName")),
-                            // You might have more columns
-                        };
+                            customer = new Customer
+                            {
+                                Id = customerId,
+                                FirstName = reader.GetString(reader.GetOrdinal("FirstName")),
+                                LastName = reader.GetString(reader.GetOrdinal("LastName"))
+                            };
+                        }
+
+
+                        if (include == "products")
+                        {
+                            Product product = new Product
+                            {
+                                Id = reader.GetInt32(reader.GetOrdinal("ProductId")),
+                                Title = reader.GetString(reader.GetOrdinal("Title")),
+                                Description = reader.GetString(reader.GetOrdinal("Description")),
+                                Price = reader.GetDecimal(reader.GetOrdinal("Price")),
+                                Quantity = reader.GetInt32(reader.GetOrdinal("Quantity"))
+                            };
+
+                            customer.Products.Add(product);
+                        }
+                        
+                        if (include == "payments")
+                        {
+                            PaymentType paymentType = new PaymentType
+                            {
+                                Id = reader.GetInt32(reader.GetOrdinal("PaymentTypeId")),
+                                AcctNumber = reader.GetInt32(reader.GetOrdinal("AcctNumber")),
+                                Name = reader.GetString(reader.GetOrdinal("Name"))
+                            };
+                             
+                            customer.PaymentTypes.Add(paymentType);
+                        }
 
                         customers.Add(customer);
                     }
@@ -63,37 +145,6 @@ namespace BangazonAPI.Controllers
             }
         }
 
-        // GET api/values/5
-        [HttpGet("{id}")]
-        public async Task<IActionResult> Get(int id)
-        {
-            using (SqlConnection conn = Connection)
-            {
-                conn.Open();
-                using (SqlCommand cmd = conn.CreateCommand())
-                {
-                    cmd.CommandText = "Write your SQL statement here to get a single customer";
-                    cmd.Parameters.Add(new SqlParameter("@id", id));
-                    SqlDataReader reader = await cmd.ExecuteReaderAsync();
-
-                    Customer customer = null;
-                    if (reader.Read())
-                    {
-                        customer = new Customer
-                        {
-                            Id = reader.GetInt32(reader.GetOrdinal("Id")),
-                            FirstName = reader.GetString(reader.GetOrdinal("FirstName")),
-                            LastName = reader.GetString(reader.GetOrdinal("LastName")),
-                            // You might have more columns
-                        };
-                    }
-
-                    reader.Close();
-
-                    return Ok(customer);
-                }
-            }
-        }
 
         // POST api/values
         [HttpPost]
@@ -112,7 +163,7 @@ namespace BangazonAPI.Controllers
                     ";
                     cmd.Parameters.Add(new SqlParameter("@firstName", customer.FirstName));
 
-                    customer.Id = (int) await cmd.ExecuteScalarAsync();
+                    customer.Id = (int)await cmd.ExecuteScalarAsync();
 
                     return CreatedAtRoute("GetCustomer", new { id = customer.Id }, customer);
                 }
