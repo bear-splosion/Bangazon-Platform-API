@@ -62,13 +62,43 @@ namespace BangazonAPI.Controllers
             }
         }
 
-        // GET api/<controller>/5
-        [HttpGet("{id}")]
-        public string Get(int id)
-        {
-            return "value";
-        }
+        // GET api/productOrder/2
+        [HttpGet("{id}", Name = "GetOrderProduct")]
+        public async Task<IActionResult> Get(int id)
 
+        {
+            using (SqlConnection conn = Connection)
+            {
+                conn.Open();
+                using (SqlCommand cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = @"
+                        SELECT
+                            Id, ProductId, OrderId
+                        FROM OrderProduct
+                        WHERE Id = @id";
+                    cmd.Parameters.Add(new SqlParameter("@id", id));
+                    SqlDataReader reader = await cmd.ExecuteReaderAsync();
+
+                    OrderProduct orderProduct = null;
+                    if (reader.Read())
+                    {
+                        orderProduct = new OrderProduct
+                        {
+                            Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                            ProductId = reader.GetInt32(reader.GetOrdinal("ProductId")),
+                            OrderId = reader.GetInt32(reader.GetOrdinal("OrderId"))
+                        };
+                    }
+                    reader.Close();
+                    if (orderProduct == null)
+                    {
+                        return NotFound();
+                    }
+                    return Ok(orderProduct);
+                }
+            }
+        }
         // POST api/<controller>
         [HttpPost]
         public void Post([FromBody]string value)
