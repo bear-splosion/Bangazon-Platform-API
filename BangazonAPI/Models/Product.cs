@@ -10,7 +10,7 @@ namespace BangazonAPI.Models
         [Required]
         public int ProductTypeId { get; set; }
 
-        [Required]
+        
         public int CustomerId { get; set; }
 
         [Required]
@@ -24,5 +24,8 @@ namespace BangazonAPI.Models
 
         [Required]
         public int Quantity { get; set; }
+
+        //trying to get the strings from the customer id and product type id, but doesn't look like we need it
+        //public string ProductType { get; set; }
     }
 }
