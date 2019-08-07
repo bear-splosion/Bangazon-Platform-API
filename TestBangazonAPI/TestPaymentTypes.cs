@@ -63,7 +63,7 @@ namespace TestBangazonAPI
                     ASSERT
                 */
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                Assert.Equal("mastercard", paymentType.Name);
+                Assert.Equal("mastercard vip", paymentType.Name);
                 Assert.Equal(622854, paymentType.AcctNumber);
                 Assert.Equal(3, paymentType.CustomerId);
                 Assert.NotNull(paymentType);
