@@ -45,31 +45,13 @@ namespace TestBangazonAPI
         {
             using (var client = new APIClientProvider().Client)
             {
-                /*
-                    ARRANGE
-                */
-
-
-                /*
-                    ACT
-                */
+              
                 var response = await client.GetAsync("/api/products/1");
 
 
                 string responseBody = await response.Content.ReadAsStringAsync();
                 var product = JsonConvert.DeserializeObject<Product>(responseBody);
 
-                /*
-                    ASSERT
-                */
-                //Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                //Assert.Equal(3, product.ProductTypeId);
-                //Assert.Equal(2, product.CustomerId);
-                //Assert.Equal(5.00, product.Price);
-                //Assert.Equal("Book", product.Title);
-                //Assert.Equal("Beautiful, beautiful book", product.Description);
-                //Assert.Equal(13, product.Quantity);
-                //Assert.NotNull(product);
             }
 
         }
@@ -79,9 +61,7 @@ namespace TestBangazonAPI
         {
             using (var client = new APIClientProvider().Client)
             {
-                /*
-                    ARRANGE
-                */
+              
                 Product CreateProduct = new Product
                 { 
                     CustomerId = 1,
@@ -94,9 +74,7 @@ namespace TestBangazonAPI
 
                 var product = JsonConvert.SerializeObject(CreateProduct);
 
-                /*
-                    ACT
-                */
+             
                 var response = await client.PostAsync("/api/products",
                 new StringContent(product, Encoding.UTF8, "application/json")
                     );
@@ -105,9 +83,7 @@ namespace TestBangazonAPI
                 Console.WriteLine(responseBody);
                 Product tacoProduct = JsonConvert.DeserializeObject<Product>(responseBody);
 
-                /*
-                    ASSERT
-                */
+              
                 Assert.Equal(HttpStatusCode.Created, response.StatusCode);
                 Assert.Equal(CreateProduct.CustomerId, tacoProduct.CustomerId);
                 Assert.Equal(CreateProduct.Price, tacoProduct.Price);
@@ -115,14 +91,10 @@ namespace TestBangazonAPI
                 Assert.Equal(CreateProduct.Description, tacoProduct.Description);
                 Assert.Equal(CreateProduct.Quantity, tacoProduct.Quantity);
 
-                /*
-                    ACT 
-                */
+              
                 var deleteResponse = await client.DeleteAsync($"/api/products/{tacoProduct.Id}");
 
-                /*
-                    ASSERT
-                */
+               
                 Assert.Equal(HttpStatusCode.NoContent, deleteResponse.StatusCode);
             }
         }
