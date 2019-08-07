@@ -32,46 +32,36 @@ namespace BangazonAPI.Controllers
 
         // GET api/products
         [HttpGet]
-        public async Task<IActionResult> Get(string _include = null)
+        public async Task<IActionResult> Get()
         {
-            return await GetProducts(include: _include);
+            return await GetProducts();
         }
 
         // GET api/products/5
         [HttpGet("{id}")]
-        public async Task<IActionResult> Get(int id, string _include = null)
+        public async Task<IActionResult> Get(int id)
         {
-            return await GetProducts(id, _include);
+            return await GetProducts(id);
         }
-        private async Task<IActionResult> GetProducts(int? id = null, string include = null)
+        private async Task<IActionResult> GetProducts(int? id = null)
         {
             using (SqlConnection conn = Connection)
             {
                 conn.Open();
                 using (SqlCommand cmd = conn.CreateCommand())
                 {
-                    if (include == "products")
+                        cmd.CommandText = @"SELECT Price,
+                                                   Id,
+                                                   Title,
+                                                   Description,
+                                                   Quantity,
+                                                   CustomerId,
+                                                   ProductTypeId
+                                                   FROM Product";
+                    if (id.HasValue)
                     {
-                        cmd.CommandText = @"SELECT p.Price
-                                                   p.Title
-                                                   p.Description
-                                                   p.Quantity
-                                                   p.CustomerId
-                                                   p.ProductTypeId
-                                                   FROM Product p
-                                                   LEFT JOIN ProductType pt
-                                                   ON p.ProductTypeId = pt.Id
-                                                   LEFT JOIN Customer c
-                                                   ON p.CustomerId = c.Id;";
-                    }
-
-                    else
-                    {
-                        cmd.CommandText = @"SELECT p.Price
-													p.Title
-													p.Description
-													p.Quantity
-													FROM Product p";
+                        cmd.CommandText += @" WHERE Id = @id";
+                        cmd.Parameters.AddWithValue("@id", id.Value);
                     }
 
                     SqlDataReader reader = await cmd.ExecuteReaderAsync();
@@ -93,8 +83,9 @@ namespace BangazonAPI.Controllers
                                 Quantity = reader.GetInt32(reader.GetOrdinal("Quantity"))
                             };
                         };
+                        products.Add(product);
                     }
-                    //QUESTION -- SHOULD CUSTOMERID BE ABLE TO BE NULL?​
+
                     reader.Close();
                     
                     return Ok(products);
