@@ -46,13 +46,14 @@ namespace TestBangazonAPI
             {
                 /*
                     ARRANGE
+
                 */
 
 
                 /*
                     ACT
                 */
-                var response = await client.GetAsync("/api/paymenttypes/4");
+                var response = await client.GetAsync("/api/paymentTypes/4");
 
 
                 string responseBody = await response.Content.ReadAsStringAsync();
