@@ -35,7 +35,7 @@ namespace BangazonAPI.Controllers
         public async Task<IActionResult> Get()
         {
             using (SqlConnection conn = Connection)
-            {
+            { 
                 conn.Open();
                 using (SqlCommand cmd = conn.CreateCommand())
                 {
