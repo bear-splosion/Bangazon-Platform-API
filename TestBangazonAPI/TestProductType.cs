@@ -35,5 +35,31 @@ namespace TestBangazonAPI
                 Assert.True(productTypes.Count > 0);
             }
         }
-    }
+
+        [Fact]
+
+        public async Task Test_Get_Single_ProductType()
+        {
+            using (var client = new APIClientProvider().Client)
+        {
+            /*
+                * Arrange
+                */
+
+            /*
+             * Act
+             */
+            var response = await client.GetAsync("/api/producttypes/1");
+
+    string responseBody = await response.Content.ReadAsStringAsync();
+    var productType = JsonConvert.DeserializeObject<ProductType>(responseBody);
+
+    /* ASSERT
+             */
+    Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                 Assert.Equal("Groceries", productType.Name);
+                 Assert.NotNull(productType);
+        }
+      }
+   }
 }
