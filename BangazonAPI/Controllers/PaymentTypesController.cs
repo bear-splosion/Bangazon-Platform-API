@@ -66,7 +66,7 @@ namespace BangazonAPI.Controllers
         }
 
         // GET api/paymentTypes/5
-        [HttpGet("{id}")]
+        [HttpGet("{id}", Name = "GetPaymentType")]
         public async Task<IActionResult> Get(int id)
         {
             using (SqlConnection conn = Connection)
@@ -95,7 +95,10 @@ namespace BangazonAPI.Controllers
                     }
 
                     reader.Close();
-
+                    if (paymentType == null)
+                    {
+                        return NotFound();
+                    }
                     return Ok(paymentType);
                 }
             }
@@ -140,13 +143,12 @@ namespace BangazonAPI.Controllers
                     {
                         cmd.CommandText = @"
                             UPDATE PaymentType
-                            SET Name = @name
-                            SET AcctNumber = @acctNumber
-                            SET CustomerId = @customerId
-                            -- Set the remaining columns here
+                            SET [Name] = @name,
+                                AcctNumber = @acctNumber,
+                                CustomerId = @customerId
                             WHERE Id = @id
                         ";
-                        cmd.Parameters.Add(new SqlParameter("@id", paymentType.Id));
+                        cmd.Parameters.Add(new SqlParameter("@id", id));
                         cmd.Parameters.Add(new SqlParameter("@name", paymentType.Name));
                         cmd.Parameters.Add(new SqlParameter("@acctNumber", paymentType.AcctNumber));
                         cmd.Parameters.Add(new SqlParameter("@customerId", paymentType.CustomerId));
@@ -176,10 +178,41 @@ namespace BangazonAPI.Controllers
         }
 
         // DELETE api/values/5
-        //[HttpDelete("{id}")]
-        //public async Task<IActionResult> Delete(int id)
-        //{
-        //}
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete([FromRoute] int id)
+        {
+            try
+            {
+                using (SqlConnection conn = Connection)
+                {
+                    conn.Open();
+                    using (SqlCommand cmd = conn.CreateCommand())
+                    {
+                        cmd.CommandText = @"DELETE FROM PaymentType
+                        WHERE Id = @id";
+                        cmd.Parameters.Add(new SqlParameter("@id", id));
+
+                        int rowsAffected = cmd.ExecuteNonQuery();
+                        if (rowsAffected > 0)
+                        {
+                            return new StatusCodeResult(StatusCodes.Status204NoContent);
+                        }
+                        throw new Exception("No rows affected");
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                if(!PaymentTypeExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+        }
 
         private bool PaymentTypeExists(int id)
         {
