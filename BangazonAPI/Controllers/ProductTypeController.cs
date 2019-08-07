@@ -15,12 +15,12 @@ namespace BangazonAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ProductTypeController : ControllerBase
+    public class ProductTypesController : ControllerBase
     {
 
         private readonly IConfiguration _config;
 
-        public ProductTypeController(IConfiguration config)
+        public ProductTypesController(IConfiguration config)
 
         { _config = config; }
 
@@ -43,10 +43,12 @@ namespace BangazonAPI.Controllers
                 conn.Open();
                 using (SqlCommand cmd = conn.CreateCommand())
                 {
-                    string SqlCommandText = @"SELECT p.Id, p.[Name]
-                                            FROM ProductType p
-                                            WHERE 1 = 1";
-                    SqlDataReader reader = cmd.ExecuteReader();
+                    cmd.CommandText = @"
+                    SELECT 
+                        Id, [Name]
+                        FROM ProductType
+                        ";
+                    SqlDataReader reader = await cmd.ExecuteReaderAsync();
 
                     List<ProductType> productTypes = new List<ProductType>();
                     while (reader.Read())
@@ -66,31 +68,44 @@ namespace BangazonAPI.Controllers
                     return Ok(productTypes);
                 }
             }
-    }
+        }
 
-    // GET api/<controller>/5
-    [HttpGet("{id}")]
-    public string Get(int id)
-    {
-        return "value";
-    }
+        // GET api/<controller>/5
+        [HttpGet("{id}", Name = "GetProductType")]
 
-    // POST api/<controller>
-    [HttpPost]
-    public void Post([FromBody]string value)
-    {
-    }
+        public async Task<IActionResult> Get(int id)
+        {
+            using (SqlConnection conn = Connection)
+            {
+                conn.Open();
+                using (SqlCommand cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = @"
+                        SELECT
+                            Id, [Name]
+                        FROM ProductType
+                        WHERE Id = @id";
+                    cmd.Parameters.Add(new SqlParameter("@id", id));
+                    SqlDataReader reader = await cmd.ExecuteReaderAsync();
 
-    // PUT api/<controller>/5
-    [HttpPut("{id}")]
-    public void Put(int id, [FromBody]string value)
-    {
-    }
+                    ProductType productType = null;
+                    if (reader.Read())
+                    {
+                        productType = new ProductType
+                        {
+                            Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                            Name = reader.GetString(reader.GetOrdinal("Name")),
 
-    // DELETE api/<controller>/5
-    [HttpDelete("{id}")]
-    public void Delete(int id)
-    {
+                        };
+                    }
+                    reader.Close();
+                    if (productType == null)
+                    {
+                        return NotFound();
+                    }
+                    return Ok(productType);
+                }
+            }
+        }
     }
-}
 }
