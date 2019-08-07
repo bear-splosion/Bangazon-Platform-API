@@ -96,27 +96,32 @@ namespace BangazonAPI.Controllers
 
         // POST api/values
         //[HttpPost]
-        //public async Task<IActionResult> Post([FromBody] Customer customer)
-        //{
-        //    using (SqlConnection conn = Connection)
-        //    {
-        //        conn.Open();
-        //        using (SqlCommand cmd = conn.CreateCommand())
-        //        {
-        //            // More string interpolation
-        //            cmd.CommandText = @"
-        //                INSERT INTO Customer ()
-        //                OUTPUT INSERTED.Id
-        //                VALUES ()
-        //            ";
-        //            cmd.Parameters.Add(new SqlParameter("@firstName", customer.FirstName));
+        public async Task<IActionResult> Post([FromBody] Product product)
+        {
+            using (SqlConnection conn = Connection)
+            {
+                conn.Open();
+                using (SqlCommand cmd = conn.CreateCommand())
+                {
+                    // More string interpolation
+                    cmd.CommandText = @"
+                        INSERT INTO Product (ProductTypeId, CustomerId, Price, [Title], [Description], Quantity)
+                        OUTPUT INSERTED.Id
+                        VALUES (@productTypeId, @customerId, @price, @title, @description, @quantity)
+                    ";
+                    cmd.Parameters.Add(new SqlParameter("@productTypeId", product.ProductTypeId));
+                    cmd.Parameters.Add(new SqlParameter("@customerId", product.CustomerId));
+                    cmd.Parameters.Add(new SqlParameter("@price", product.Price));
+                    cmd.Parameters.Add(new SqlParameter("@title", product.Title));
+                    cmd.Parameters.Add(new SqlParameter("@description", product.Description));
+                    cmd.Parameters.Add(new SqlParameter("@quantity", product.Quantity));
 
-        //            customer.Id = (int)await cmd.ExecuteScalarAsync();
+                    product.Id = (int)await cmd.ExecuteScalarAsync();
 
-        //            return CreatedAtRoute("GetCustomer", new { id = customer.Id }, customer);
-        //        }
-        //    }
-        //}
+                    return CreatedAtRoute("GetCustomer", new { id = customer.Id }, customer);
+                }
+            }
+        }
 
         // PUT api/values/5
         //[HttpPut("{id}")]
