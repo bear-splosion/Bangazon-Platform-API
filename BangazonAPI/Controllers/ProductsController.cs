@@ -87,9 +87,15 @@ namespace BangazonAPI.Controllers
                     }
 
                     reader.Close();
-                    
-                    return Ok(products);
-                }
+                    if (products.Count() == 1)
+                    {
+                        return Ok(products[0]);
+                    }
+                    else
+                    {
+                        return Ok(products);
+                    }
+                    }
             }
         }
 
