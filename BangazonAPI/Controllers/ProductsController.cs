@@ -118,7 +118,7 @@ namespace BangazonAPI.Controllers
 
                     product.Id = (int)await cmd.ExecuteScalarAsync();
 
-                    return CreatedAtRoute("GetCustomer", new { id = customer.Id }, customer);
+                    return CreatedAtRoute("GetProduct", new { id = product.Id }, product);
                 }
             }
         }
