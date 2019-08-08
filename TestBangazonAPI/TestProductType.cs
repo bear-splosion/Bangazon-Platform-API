@@ -41,25 +41,68 @@ namespace TestBangazonAPI
         public async Task Test_Get_Single_ProductType()
         {
             using (var client = new APIClientProvider().Client)
-        {
-            /*
-                * Arrange
-                */
+            {
+                /*
+                    * Arrange
+                    */
 
-            /*
-             * Act
-             */
-            var response = await client.GetAsync("/api/producttypes/1");
+                /*
+                 * Act
+                 */
+                var response = await client.GetAsync("/api/producttypes/1");
 
-    string responseBody = await response.Content.ReadAsStringAsync();
-    var productType = JsonConvert.DeserializeObject<ProductType>(responseBody);
+                string responseBody = await response.Content.ReadAsStringAsync();
+                var productType = JsonConvert.DeserializeObject<ProductType>(responseBody);
 
-    /* ASSERT
-             */
-    Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                 Assert.Equal("Groceries", productType.Name);
-                 Assert.NotNull(productType);
+                /* ASSERT
+                         */
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                Assert.Equal("Groceries", productType.Name);
+                Assert.NotNull(productType);
+            }
         }
-      }
-   }
+
+        [Fact]
+        public async Task Test_Create_And_Delete_ProductType()
+        {
+            using (var client = new APIClientProvider().Client)
+            {
+                /*
+                    ARRANGE
+                */
+                ProductType product1 = new ProductType
+                {
+                    Name = "Widget"
+                };
+
+                var product1JSON = JsonConvert.SerializeObject(product1);
+
+                /*
+                    ACT
+                */
+                var response = await client.PostAsync("/api/paymentTypes",
+                new StringContent(product1AsJSON, Encoding.UTF8, "application/json")
+                    );
+
+                string responseBody = await response.Content.ReadAsStringAsync();
+                ProductType NewProduct = JsonConvert.DeserializeObject<ProductType>(responseBody);
+
+                /*
+                    ASSERT
+                */
+                Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+                Assert.Equal(product1.Name, NewProduct.Name);
+
+                /*
+                    ACT 
+                */
+                var deleteResponse = await client.DeleteAsync($"/api/productTypes/{NewProduct.Id}");
+
+                /*
+                    ASSERT
+                */
+                Assert.Equal(HttpStatusCode.NoContent, deleteResponse.StatusCode);
+            }
+        }
+    }
 }
