@@ -53,16 +53,16 @@ namespace TestBangazonAPI
                 var response = await client.GetAsync("/api/orderproduct/1");
 
                 string responseBody = await response.Content.ReadAsStringAsync();
-                var orderProduct = JsonConvert.DeserializeObject<OrderProduct>(responseBody);
+                var orderproduct = JsonConvert.DeserializeObject<OrderProduct>(responseBody);
 
                 /*
                     ASSERT
                 */
 
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                Assert.Equal(3, orderProduct.OrderId);
-                Assert.Equal(2, orderProduct.ProductId);
-                Assert.NotNull(orderProduct);
+                Assert.Equal(3, orderproduct.OrderId);
+                Assert.Equal(2, orderproduct.ProductId);
+                Assert.NotNull(orderproduct);
 
 
             }
