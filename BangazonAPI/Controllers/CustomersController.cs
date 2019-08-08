@@ -34,17 +34,25 @@ namespace BangazonAPI.Controllers
         [HttpGet]
         public async Task<IActionResult> Get(string _include = null, string q=null)
         {
-            return await GetCustomers(include: _include, q: q);
+            return Ok(await GetCustomers(include: _include, q: q));
         }
 
         // GET api/values/5
         [HttpGet("{id}", Name = "GetCustomer")]
         public async Task<IActionResult> Get(int id, string _include = null, string q=null)
         {
-            return await GetCustomers(id, _include, q);
+            var customer = (await GetCustomers(id, _include, q)).FirstOrDefault();
+            if (customer == null)
+            {
+                return NotFound();
+            }
+            else
+            {
+                return Ok(customer);
+            }
         }
 
-        private async Task<IActionResult> GetCustomers(int? id = null, string include = null, string q = null)
+        private async Task<List<Customer>> GetCustomers(int? id = null, string include = null, string q = null)
         {
             using (SqlConnection conn = Connection)
             {
@@ -152,7 +160,7 @@ namespace BangazonAPI.Controllers
 
                     reader.Close();
 
-                    return Ok(customers);
+                    return customers;
                 }
             }
         }
