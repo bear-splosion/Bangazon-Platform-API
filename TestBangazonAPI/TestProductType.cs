@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Xunit;
@@ -11,6 +12,8 @@ namespace TestBangazonAPI
 {
     public class TestProductType
     {
+        private object product1;
+
         [Fact]
         public async Task Test_Get_All_ProductTypes()
         {
@@ -75,12 +78,12 @@ namespace TestBangazonAPI
                     Name = "Widget"
                 };
 
-                var product1JSON = JsonConvert.SerializeObject(product1);
+                var product1AsJSON = JsonConvert.SerializeObject(product1);
 
                 /*
                     ACT
                 */
-                var response = await client.PostAsync("/api/paymentTypes",
+                var response = await client.PostAsync("/api/productTypes",
                 new StringContent(product1AsJSON, Encoding.UTF8, "application/json")
                     );
 
