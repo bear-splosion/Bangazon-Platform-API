@@ -80,6 +80,7 @@ namespace BangazonAPI.Controllers
                         FROM PaymentType
                         WHERE Id = @id";
                     cmd.Parameters.Add(new SqlParameter("@id", id));
+
                     SqlDataReader reader = await cmd.ExecuteReaderAsync();
 
                     PaymentType paymentType = null;
