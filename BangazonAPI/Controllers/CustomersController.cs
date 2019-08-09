@@ -32,19 +32,27 @@ namespace BangazonAPI.Controllers
 
         // GET api/customers
         [HttpGet]
-        public async Task<IActionResult> Get(string _include = null)
+        public async Task<IActionResult> Get(string _include = null, string q=null)
         {
-            return await GetCustomers(include: _include);
+            return Ok(await GetCustomers(include: _include, q: q));
         }
 
         // GET api/values/5
-        [HttpGet("{id}")]
-        public async Task<IActionResult> Get(int id, string _include = null)
+        [HttpGet("{id}", Name = "GetCustomer")]
+        public async Task<IActionResult> Get(int id, string _include = null, string q=null)
         {
-            return await GetCustomers(id, _include);
+            var customer = (await GetCustomers(id, _include, q)).FirstOrDefault();
+            if (customer == null)
+            {
+                return NotFound();
+            }
+            else
+            {
+                return Ok(customer);
+            }
         }
 
-        private async Task<IActionResult> GetCustomers(int? id = null, string include = null)
+        private async Task<List<Customer>> GetCustomers(int? id = null, string include = null, string q = null)
         {
             using (SqlConnection conn = Connection)
             {
@@ -85,11 +93,23 @@ namespace BangazonAPI.Controllers
                                                    c.LastName
                                             FROM Customer c";
                     }
+
+                    var whereConnector = "WHERE";
                     if (id.HasValue)
                     {
-                        cmd.CommandText += @" WHERE c.Id = @id";
+                        cmd.CommandText += $" {whereConnector} c.Id = @id ";
                         cmd.Parameters.AddWithValue("@id", id.Value);
+                        whereConnector = "AND";
                     }
+                    if (q != null)
+                    {
+                        cmd.CommandText += $" {whereConnector} (c.FirstName LIKE @q OR " + 
+                                                              $"c.LastName LIKE @q) " ;
+
+                        cmd.Parameters.AddWithValue("@q", $"%{q}%");
+                        whereConnector = "AND";
+                    }
+
                     SqlDataReader reader = await cmd.ExecuteReaderAsync();
 
                     List<Customer> customers = new List<Customer>();
@@ -106,24 +126,25 @@ namespace BangazonAPI.Controllers
                                 FirstName = reader.GetString(reader.GetOrdinal("FirstName")),
                                 LastName = reader.GetString(reader.GetOrdinal("LastName"))
                             };
+                            customers.Add(customer);
                         }
 
 
-                        if (include == "products")
+                        if (include == "products" && !reader.IsDBNull(reader.GetOrdinal("ProductId")))
                         {
                             Product product = new Product
                             {
                                 Id = reader.GetInt32(reader.GetOrdinal("ProductId")),
                                 Title = reader.GetString(reader.GetOrdinal("Title")),
                                 Description = reader.GetString(reader.GetOrdinal("Description")),
-                                Price = reader.GetDouble(reader.GetOrdinal("Price")),
+                                Price = reader.GetDecimal(reader.GetOrdinal("Price")),
                                 Quantity = reader.GetInt32(reader.GetOrdinal("Quantity"))
                             };
 
                             customer.Products.Add(product);
                         }
 
-                        if (include == "payments")
+                        if (include == "payments" && !reader.IsDBNull(reader.GetOrdinal("PaymentTypeId")))
                         {
                             PaymentType paymentType = new PaymentType
                             {
@@ -135,12 +156,11 @@ namespace BangazonAPI.Controllers
                             customer.PaymentTypes.Add(paymentType);
                         }
 
-                        customers.Add(customer);
                     }
 
                     reader.Close();
 
-                    return Ok(customers);
+                    return customers;
                 }
             }
         }
@@ -157,11 +177,12 @@ namespace BangazonAPI.Controllers
                 {
                     // More string interpolation
                     cmd.CommandText = @"
-                        INSERT INTO Customer ()
+                        INSERT INTO Customer (firstName,lastName)
                         OUTPUT INSERTED.Id
-                        VALUES ()
+                        VALUES (@firstName,@lastName)
                     ";
                     cmd.Parameters.Add(new SqlParameter("@firstName", customer.FirstName));
+                    cmd.Parameters.Add(new SqlParameter("@lastName", customer.LastName));
 
                     customer.Id = (int)await cmd.ExecuteScalarAsync();
 
@@ -183,12 +204,13 @@ namespace BangazonAPI.Controllers
                     {
                         cmd.CommandText = @"
                             UPDATE Customer
-                            SET FirstName = @firstName
-                            -- Set the remaining columns here
+                            SET FirstName = @firstName,
+                                LastName = @lastName
                             WHERE Id = @id
                         ";
                         cmd.Parameters.Add(new SqlParameter("@id", customer.Id));
                         cmd.Parameters.Add(new SqlParameter("@firstName", customer.FirstName));
+                        cmd.Parameters.Add(new SqlParameter("@lastName", customer.LastName));
 
                         int rowsAffected = await cmd.ExecuteNonQueryAsync();
 
